@@ -24,7 +24,7 @@ function initMap() {
       //resolutions[z] = maxResolution / Math.pow(2, z+1);
       resolutions.push((maxResolution / Math.pow(2, z+1)) ) ;
   }
-  console.log(maxResolution);
+  console.log(resolutions);
   /*var resolutions = [
     tilesCountX/4,
     tilesCountX/4/2,
@@ -37,12 +37,31 @@ function initMap() {
     tileSize: tileSize
   });
 
+  var url = '/tile/{z}/{x}/{y}';
+
+  // Reverse coordinate
   var source = new ol.source.XYZ({
     projection: pixelProj,
     wrapX: false,
-    url: '/tile/{z}/{x}/{y}',
+    url: url,
     tileGrid: tileGrid
   });
+
+  // Normal coordinat
+  // var source = new ol.source.TileImage({
+  //     tileUrlFunction: function(tileCoord, pixelRatio, projection) {
+  //         var tileCoordGlobal = tileCoord;
+
+  //         return url
+  //             .replace('{z}', (tileCoord[0]).toString())
+  //             .replace('{x}', (tileCoord[1]).toString())
+  //             .replace('{y}', (((-tileCoord[2])-1)).toString())
+  //         ;
+  //     },
+  //     wrapX: true,
+  //     projection: pixelProj,
+  //     tileGrid: tileGrid
+  // });
 
   var tileLayer = new ol.layer.Tile({
     source: source,
@@ -80,9 +99,13 @@ function initMap() {
 
   var mousePositionControl = new ol.control.MousePosition({});
 
+  var scaleLineControl = new ol.control.ScaleLine('metric');
+  scaleLineControl.setUnits('metric');
+
   map.addControl(mousePositionControl);
   map.addControl(initOverviewMap(1));
   map.addControl(new ol.control.ZoomSlider());
+  map.addControl(scaleLineControl);
 
   setupDrawing(map, drawingFeatures);
 }

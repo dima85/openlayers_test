@@ -34,7 +34,7 @@ function initMap() {
   var urlTemplate = '/tile/{z}/{y}/{x}';
 
   var tileGrid = new ol.tilegrid.TileGrid({
-    origin: ol.extent.getTopLeft(projectionExtent),
+    origin: [0, maxY],//ol.extent.getTopLeft(projectionExtent),
     resolutions: resolutions,
     tileSize: tileSize
   });
