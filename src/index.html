@@ -44,8 +44,8 @@
     </style>
 
     <script src="http://openlayers.org/en/v3.17.1/build/ol.js" type="text/javascript"></script>
-    <!-- <script type="text/javascript" src="./scripts/map.js"></script>
- -->
+<!--     <script type="text/javascript" src="./scripts/map_xyz.js"></script> -->
+
 
     <title>OpenLayers 3 example</title>
 
@@ -66,7 +66,9 @@
 
 
     <script type="text/javascript">
-
+      // http://jsfiddle.net/jonataswalker/6f233kLy/
+      // http://stackoverflow.com/questions/35928163/openlayers-3-static-tiles-and-xyz-coordinates
+      var maxZoolLevel = 2;
       var sizeX = 4096;
       var sizeY = 4096;
       var tileSize = 512;
@@ -80,11 +82,18 @@
 
       var projectionExtent = pixelProj.getExtent();
 
-      var resolutions = [
+      var maxResolution = ol.extent.getWidth(projectionExtent) / tileSize;
+      var resolutions = [];
+      for (var z = 0; z <= maxZoolLevel; z++) {
+          //resolutions[z] = maxResolution / Math.pow(2, z+1);
+          resolutions.push((maxResolution / Math.pow(2, z+1)) ) ;
+      }
+      console.log(resolutions);
+      /*var resolutions = [
         tilesCountX/4,
         tilesCountX/4/2,
         tilesCountX/4/4
-      ];
+      ];*/
 
       var tileGrid = new ol.tilegrid.TileGrid({
         origin: ol.extent.getTopLeft(projectionExtent),
@@ -99,77 +108,94 @@
         tileGrid: tileGrid
       });
 
-      var layer = new ol.layer.Tile({
-        source: source
+      var tileLayer = new ol.layer.Tile({
+        source: source,
+        extent: projectionExtent
       });
 
       var view = new ol.View({
         zoom: 0,
+        minZoom: 0,
+        maxZoom: maxZoolLevel + 2,
+        renderer: 'canvas',
         center: [sizeX/2, sizeY/2],
-        projection: pixelProj
+        projection: pixelProj,
+        extent: projectionExtent, // restrict image going outside screen
+        //resolutions: resolutions // restrict zoomout level
+
       });
 
       var map = new ol.Map({
         target: 'map',
-        layers: [layer],
-        view: view
+        layers: [tileLayer],
+        view: view,
+        controls: ol.control.defaults({
+          attributionOptions: /** @type {olx.control.AttributionOptions} */
+          {
+            collapsible: false
+          }
+        })
+        .extend([
+          //new ol.control.OverviewMap({collapsed: false}),
+          initOverviewMap(),
+          new ol.control.ZoomSlider()
+        ])
       });
 
+      function initOverviewMap() {
 
-      // var projectionExtent = pixelProj.getExtent();
+        var pixelProj1 = new ol.proj.Projection({
+          code: 'pixel',
+          units: 'pixels',
+          extent: [0, 0, sizeX, sizeY]
+        });
 
-      // var resolutions = [
-      //   tilesCountX/4,
-      //   tilesCountX/4/2,
-      //   tilesCountX/4/4
-      // ];
+        var projectionExtent1 = pixelProj.getExtent();
 
-      // var tileGrid = new ol.tilegrid.TileGrid({
-      //   origin: ol.extent.getTopLeft(projectionExtent),
-      //   resolutions: resolutions,
-      //   tileSize: tileSize
-      // });
+        var maxResolution1 = ol.extent.getWidth(projectionExtent1) / tileSize;
+        var resolutions1 = [];
+        for (var z = 0; z <= 1; z++) {
+            //resolutions[z] = maxResolution / Math.pow(2, z+1);
+            resolutions1.push((maxResolution1 / Math.pow(2, z+1)) ) ;
+        }
+        console.log(resolutions1);
+        /*var resolutions = [
+          tilesCountX/4,
+          tilesCountX/4/2,
+          tilesCountX/4/4
+        ];*/
 
+        var tileGrid1 = new ol.tilegrid.TileGrid({
+          origin: ol.extent.getTopLeft(projectionExtent1),
+          resolutions: resolutions1,
+          tileSize: tileSize
+        });
 
-      // var tileSource = new ol.source.XYZ({
-      //   projection: pixelProj,
-      //   wrapX: false,
-      //   url: '/tile/{z}/{x}/{y}',
-      //   tileGrid: tileGrid
-      // });
+        var source1 = new ol.source.XYZ({
+          projection: pixelProj1,
+          wrapX: false,
+          url: '/tile/{z}/{x}/{y}',
+          tileGrid: tileGrid1
+        });
 
-      // var layer = new ol.layer.Tile({
-      //   source: tileSource,
-      //   extent: projectionExtent
-      // });
+        var tileLayer1 = new ol.layer.Tile({
+          source: source1,
+          extent: projectionExtent1
+        });
 
-      // var view = new ol.View({
-      //   zoom: 0,
-      //   center: [sizeX/2, sizeY/2],
-      //   projection: pixelProj,
-      //   extent: projectionExtent,
-      //   resolutions: resolutions
-      // });
-
-      // var map = new ol.Map({
-      //   target: 'map',
-      //   layers: [layer],
-      //   view: view,
-      //   controls: ol.control.defaults({
-      //     attributionOptions: /** @type {olx.control.AttributionOptions} */
-      //     {
-      //       collapsible: false
-      //     }
-      //   })
-      //   .extend([
-      //     //new ol.control.OverviewMap({collapsed: false}),
-      //     new ol.control.ZoomSlider()
-      //   ])
-      // });
-
-      var mousePositionControl = new ol.control.MousePosition({});
-
-      map.addControl(mousePositionControl);
+        var overviewMapControl1 = new ol.control.OverviewMap({
+          collapsible: false,
+          collapsed: false,
+          className: 'ol-overviewmap ol-custom-overviewmap',
+          layers: [
+            tileLayer1
+          ],
+          collapseLabel: '\u00BB',
+          label: '\u00AB',
+          collapsed: false
+        });
+        return overviewMapControl1;
+      }
 
     </script>
 

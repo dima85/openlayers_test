@@ -1,4 +1,5 @@
 // http://openlayers.org/en/v3.1.1/examples/zoomify.html
+// http://tschaub.net/ol-strapless/examples/zoomify.html
 
 var imgWidth = 4096;
 var imgHeight = 4096;
